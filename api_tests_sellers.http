@@ -1,0 +1,32 @@
+### Создаем продавца
+POST http://localhost:8000/api/v1/seller/
+Content-Type: application/json
+
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "e_mail": "johndoe@example.com",
+  "password": "securepassword"
+}
+
+### Получаем список всех продавцов
+GET http://localhost:8000/api/v1/seller/
+Accept: application/json
+
+### Получаем конкертного продавца
+GET http://localhost:8000/api/v1/seller/1
+Accept: application/json
+
+### Обновляем конкретного продавца
+PUT http://localhost:8000/api/v1/seller/1
+Content-Type: application/json
+
+{
+  "id": 1,
+  "first_name": "UpdatedName",
+  "last_name": "UpdatedLastName",
+  "e_mail": "updatedemail@example.com"
+}
+
+### Удаляем конкретного продавца
+DELETE http://localhost:8000/api/v1/seller/1
