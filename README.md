@@ -1,48 +1,103 @@
-## Изменения по урокам
+# Book Library API
 
-**Урок 1**. Реализовали ручки приложения с фейковой базой и сериализаторами.
+Учебный асинхронный REST-сервис на **FastAPI**. Предоставляет CRUD-эндпоинты для двух сущностей — **книг** и **продавцов**.
 
-**Урок 2**. Провели рефакторинг. Разложили сериализаторы и ручки по отдельным пакетам.
-Подключили настоящую БД в Докере и создали модели.
+---
 
-**Урок 3**. Провели рефакторинг.
+## Возможности
 
-Поместили питонячий код в папку src (чтобы тесты запускались корректно и код был отделен от окружения).
+- **FastAPI + Uvicorn** — высокопроизводительный ASGI-сервер  
+- **SQLAlchemy 2.0 (async)** — асинхронный доступ к PostgreSQL  
+- **Pydantic v2** — строгая валидация входящих/исходящих данных  
+- Автодокументация Swagger UI и ReDoc (`/docs`, `/redoc`)  
+- Интеграционные и unit-тесты на **pytest**  
+- Готовый `docker-compose` для PostgreSQL (две БД: prod и test)  
+- Конфигурация через переменные окружения (`.env.example`)  
 
-Написали по одному тесту к ручкам.
+---
 
-Настроили pytest и фикстуры. Пример почти идеальной настройки фикстур для работы с БД.
+## Быстрый старт
 
-Добавили .env файл и модуль settings для хранения переменных окружения и их легкого использования.
+> Требования: **Python ≥ 3.12** и **Docker**.
 
-## Структура проекта
+```bash
+# Клонируем проект
+git clone https://github.com/<YOUR_GH_LOGIN>/fast_api_shad.git
+cd fast_api_shad
 
-Для удобства и соблюдения принципов чистой архитектуры проект разделен на следующие пакеты:
+# Создаём .env на основе примера
+cp .env.example .env              # поправьте значения при необходимости
 
-- `configurations` — слой для хранения конфигураций, констант, параметров и настроек проекта.
+# Поднимаем PostgreSQL
+docker compose up -d              # база слушает 127.0.0.1:5445
 
-- `models` — слой для хранения моделей (ORM или Data Classes).
+# Устанавливаем зависимости
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt   # либо poetry install
 
-- `routers` — слой для настроек урлов для различных эндпоинтов.
+# Запускаем приложение
+uvicorn src.main:app --reload --port 8000
+````
 
-- `schemas` — слой содержащий схемы pydantic, отвечает за сериализацию и валидацию.
+После старта:
 
-## Полезные ссылки (в основном на английском)
+* **Swagger UI** — [http://localhost:8000/docs](http://localhost:8000/docs)
+* **ReDoc** — [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
-#### По Fastapi:
+Таблицы создаются автоматически при запуске.
 
-1. [Официальная документация](https://fastapi.tiangolo.com/)
+## Примеры запросов
 
-2. [Лучшие практики](https://github.com/zhanymkanov/fastapi-best-practices)
+```http
+### Создать продавца
+POST http://localhost:8000/api/v1/sellers
+Content-Type: application/json
 
-3. [Собрание полезных библиотек и пакетов](https://github.com/mjhea0/awesome-fastapi)
+{
+  "name": "O'Reilly Media",
+  "country": "USA",
+  "city": "Sebastopol"
+}
 
-4. [Полезная статья по структуре проекта](https://camillovisini.com/coding/abstracting-fastapi-services)
+### Создать книгу
+POST http://localhost:8000/api/v1/books
+Content-Type: application/json
 
-#### По принципам REST архитектуры:
+{
+  "title": "Designing Data-Intensive Applications",
+  "year": 2017,
+  "seller_id": 1
+}
 
-5. [Полезные рекомендации по правильному написанию REST API](<https://github.com/stickfigure/blog/wiki/How-to-(and-how-not-to)-design-REST-APIs>)
+### Получить список книг
+GET http://localhost:8000/api/v1/books
+```
 
-#### По SQLAlchemy:
+Файлы `api_tests_*.http` можно открыть расширением **REST Client** в VS Code и отправлять запросы прямо из редактора.
 
-6. [Хороший бесплатный видеокурс на YouTube. На русском языке](https://youtube.com/playlist?list=PLeLN0qH0-mCXARD_K-USF2wHctxzEVp40&si=V7rZGqu1KVJvidLz)
+## Структура каталогов
+
+```
+.
+├── docker/                 # инфраструктура
+│   └── postgres/
+├── docker-compose.yml
+├── requirements.txt
+└── src/
+    ├── configurations/     # настройки и подключение к БД
+    ├── models/             # ORM-модели SQLAlchemy
+    ├── schemas/            # Pydantic-DTO
+    ├── routers/            # версионированные эндпоинты
+    ├── tests/              # pytest-тесты
+    └── main.py             # точка входа FastAPI
+```
+
+## Тестирование
+
+```bash
+pytest -q               # все тесты
+pytest -k books         # выборочно
+```
+
+Интеграционные тесты используют отдельную БД `fastapi_project_test_db`, создаваемую через Docker-инициализатор (`docker/postgres/create_databases.sql`).
+
